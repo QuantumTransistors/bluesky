@@ -2,7 +2,7 @@ import uuid
 from collections import ChainMap, OrderedDict, deque
 from collections.abc import Iterable
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 
 from bluesky.protocols import Locatable
 
@@ -34,7 +34,10 @@ from .utils import (
 from .utils import short_uid as _short_uid
 
 
-def plan_mutator(plan, msg_proc):
+def plan_mutator(
+    plan: MsgGeneratorSP[S, P],
+    msg_proc: Callable[[Msg], tuple[MsgGeneratorSP[S, Any] | None, MsgGeneratorSP[Any, Any] | None]],
+) -> MsgGeneratorSP[S, P]:
     """
     Alter the contents of a plan on the fly by changing or inserting messages.
 
