@@ -147,7 +147,7 @@ def drop() -> MsgGenerator:
 
 
 @plan
-def read(obj: Readable) -> MsgGenerator[Reading]:
+def read(obj: Readable) -> MsgGenerator[dict[str, Reading]]:
     """
     Take a reading and add it to the current bundle of readings.
 
