@@ -2,6 +2,7 @@ import uuid
 from collections import ChainMap, OrderedDict, deque
 from collections.abc import Iterable
 from functools import wraps
+from typing import Callable
 
 from bluesky.protocols import Locatable
 
@@ -17,7 +18,10 @@ from .plan_stubs import (
 )
 from .utils import (
     Msg,
+    MsgGeneratorSP,
+    P,
     RunEngineControlException,
+    S,
     ensure_generator,
     get_hinted_fields,
     make_decorator,
@@ -227,7 +231,7 @@ def plan_mutator(plan, msg_proc):
             result_stack.append(inner_ret)
 
 
-def msg_mutator(plan, msg_proc):
+def msg_mutator(plan: MsgGeneratorSP[S | None, P], msg_proc: Callable[[Msg], Msg | None]) -> MsgGeneratorSP[S, P]:
     """
     A simple preprocessor that mutates or deletes single messages in a plan.
 
@@ -254,7 +258,7 @@ def msg_mutator(plan, msg_proc):
     except StopIteration as _e:
         ret = _e.value
     else:
-        while 1:
+        while True:
             try:
                 msg = msg_proc(msg)
                 # if None, just skip message
