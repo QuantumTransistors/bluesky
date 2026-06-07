@@ -38,7 +38,7 @@ pytest                       # run the suite (configured to target src/bluesky/t
 
 Upstream type-checks with **mypy** (`mypy src`, configured under `[tool.mypy]`; also exposed as the tox `type-checking` env). The package ships `py.typed`, so its annotations are consumed by downstream code.
 
-The **active reason for working in this fork** is improving those annotations: downstream consumers are type-checked with **pyright in strict mode**, and gaps or imprecise types here surface as pyright errors there. When tightening annotations:
+The **active reason for working in this fork** is improving those annotations: at least one downstream consumer type-checks with **pyright in strict mode** (others run pyright in standard mode or not at all), so gaps or imprecise types here surface as pyright errors there. When tightening annotations:
 
 - Keep mypy passing (`mypy src`) — don't regress the upstream checker while satisfying pyright.
 - Keep additions **honest**: prefer specific types, `Protocol`s, `TypedDict`/`NamedTuple`, generics, and narrowing (`assert`, `isinstance`) over `# type: ignore`, `cast()`, or `: Any` used merely to silence a checker. Where the runtime is genuinely dynamic or an invariant is true-but-unprovable, a narrow `cast`/`Any` is acceptable — leave a one-line comment saying why.
@@ -56,10 +56,12 @@ The **active reason for working in this fork** is improving those annotations: d
 The package lives under `src/bluesky/`. The pieces that do the real work:
 
 ### `run_engine.py` — the executor
-- `RunEngine` — consumes a plan (a generator of `Msg`), runs it to completion against hardware, manages the asyncio loop, run state, interruptions (pause/resume/abort/halt), and document emission. `RunEngineInterrupted` signals a paused/stopped run; `RunEngineResult` carries the outcome.
+- `RunEngine` and `RunEngineResult` (the run outcome) are defined here. `RunEngine` consumes a plan (a generator of `Msg`), runs it to completion against hardware, manages the asyncio loop, run state, interruptions (pause/resume/abort/halt), and document emission.
+- Module-level event-loop helpers also live here (`set_bluesky_event_loop`, `autoawait_in_bluesky_event_loop`) — used by consumers that drive the engine from their own loop.
+- Note: `RunEngineInterrupted` (signals a paused/stopped run) is **not** defined here — it lives in `utils/__init__.py` and is re-exported from the top-level `bluesky` package (consumers do `from bluesky import RunEngineInterrupted`).
 
 ### `Msg` and the plan vocabulary
-- `Msg` (a `namedtuple` in `utils/__init__.py`) is the instruction unit — `Msg(command, obj, *args, **kwargs)` (e.g. `set`, `read`, `trigger`, `open_run`, `save`). `MsgGenerator` (also in `utils`) is the type alias for a plan: a generator yielding `Msg`.
+- `Msg` (a `namedtuple` in `utils/__init__.py`) is the instruction unit — `Msg(command, obj, *args, **kwargs)` (e.g. `set`, `read`, `trigger`, `open_run`, `save`). `MsgGenerator` (also in `utils`) is the type alias for a plan: a generator yielding `Msg`. `utils` is also where several top-level `bluesky` exports originate — `RunEngineInterrupted`, `FailedStatus`, `IllegalMessageSequence`.
 - `plan_stubs.py` — the small primitive plans (`mv`, `abs_set`, `trigger_and_read`, `open_run`, `save`, …) that compose into larger ones.
 - `plans.py` — the full pre-built experiment plans (`count`, `scan`, `grid_scan`, `list_scan`, …).
 - `plan_patterns.py` — geometry/trajectory helpers used by the scans (e.g. spiral, grid outer-product cycles).
