@@ -24,7 +24,6 @@ from typing import (
     Any,
     TypeAlias,
     TypedDict,
-    TypeVar,
 )
 from weakref import WeakKeyDictionary, ref
 
@@ -35,7 +34,7 @@ from cycler import Cycler, cycler
 from event_model.documents import Document, Event, EventDescriptor, RunStart, RunStop
 from tqdm import tqdm
 from tqdm.utils import _screen_shape_wrapper, _term_move_up, _unicode
-from typing_extensions import TypeIs
+from typing_extensions import TypeIs, TypeVar
 
 from bluesky._vendor.super_state_machine.errors import TransitionError
 from bluesky.protocols import (
@@ -83,7 +82,10 @@ class Msg(namedtuple("Msg_base", ["command", "obj", "args", "kwargs", "run"])):
 
 
 #: Return type of a plan, usually None. Always optional for dry-runs.
-P = TypeVar("P")
+# default=Any (not None): a bare ``MsgGenerator`` must not over-narrow plans
+# that return a concrete value, e.g. ``MsgGenerator[Status]`` assigned to a
+# parameter annotated bare ``MsgGenerator``.
+P = TypeVar("P", default=Any)
 
 #: Send type of a plan
 S = TypeVar("S")

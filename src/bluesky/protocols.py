@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
-from typing import Any, Generic, Literal, Protocol, TypeAlias, TypeVar, runtime_checkable
+from typing import Any, Generic, Literal, Protocol, TypeAlias, runtime_checkable
 
 from event_model.documents import Datum, StreamDatum, StreamResource
 from event_model.documents.event import PartialEvent
@@ -9,7 +9,7 @@ from event_model.documents.event import PartialEvent
 from event_model.documents.event_descriptor import DataKey, Dtype
 from event_model.documents.event_page import PartialEventPage
 from event_model.documents.resource import PartialResource
-from typing_extensions import ParamSpec, TypedDict, Unpack
+from typing_extensions import ParamSpec, TypedDict, TypeVar, Unpack
 
 # Squashes warning
 Dtype = Dtype  # type: ignore
@@ -29,7 +29,7 @@ class ReadingOptional(TypedDict, total=False):
     message: str
 
 
-T = TypeVar("T")
+T = TypeVar("T", default=Any)
 P = ParamSpec("P")
 
 
@@ -327,7 +327,7 @@ class EventPageCollectable(Collectable, Protocol):
         ...
 
 
-T_co = TypeVar("T_co", contravariant=True)
+T_co = TypeVar("T_co", contravariant=True, default=Any)
 
 
 @runtime_checkable

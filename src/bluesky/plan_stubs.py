@@ -259,7 +259,7 @@ def abs_set(
     *args: Any,
     group: Hashable | None = None,
     wait: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> MsgGenerator[Status]:
     """
     Set a value. Optionally, wait for it to complete before continuing.
@@ -307,7 +307,7 @@ def rel_set(
     *args: Any,
     group: Hashable | None = None,
     wait: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> MsgGenerator[Status]:
     """
     Set a value relative to current value. Optionally, wait before continuing.
@@ -352,7 +352,7 @@ def mv(
     *args: Movable | Any,
     group: Hashable | None = None,
     timeout: float | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> MsgGenerator[tuple[Status, ...]]:
     """
     Move one or more devices to a setpoint. Wait for all to complete.
@@ -755,7 +755,13 @@ def input_plan(prompt: str = "") -> MsgGenerator[str]:
 
 
 @plan
-def prepare(obj: Preparable, *args, group: Hashable | None = None, wait: bool = False, **kwargs):
+def prepare(
+    obj: Preparable,
+    *args: Any,
+    group: Hashable | None = None,
+    wait: bool = False,
+    **kwargs: Any,
+) -> MsgGenerator[Status]:
     """
     Prepare a device ready for trigger or kickoff.
 
