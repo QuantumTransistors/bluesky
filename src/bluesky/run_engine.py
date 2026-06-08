@@ -776,7 +776,7 @@ class RunEngine:
     def ignore_callback_exceptions(self, val):
         self.dispatcher.ignore_exceptions = val
 
-    def register_command(self, name, func):
+    def register_command(self, name: str, func: Callable[..., typing.Any]) -> None:
         """
         Register a new Message command.
 
