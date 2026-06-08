@@ -2,7 +2,16 @@ name: CI
 
 on:
   push:
+    # Skip CI on agent working branches; tags still trigger the release jobs below.
+    branches-ignore:
+      - 'claude/**'
+    tags:
+      - '**'
   pull_request:
+    # Skip PR CI when the target is an agent branch (e.g. PRs into claude/main).
+    # Promotion PRs into prod/main still run the full suite.
+    branches-ignore:
+      - 'claude/**'
 
 jobs:
   check:
