@@ -2836,7 +2836,7 @@ def _default_md_normalizer(md):
     return md
 
 
-def _ensure_event_loop_running(loop):
+def _ensure_event_loop_running(loop: asyncio.AbstractEventLoop) -> threading.Thread:
     """
     Run an asyncio event loop forever on a background thread.
 
