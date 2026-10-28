@@ -235,6 +235,59 @@ def test_stop_motors_and_log_any_errors(RE, hw):
     RE.stop()
 
 
+@pytest.mark.parametrize(
+    "end_run, expected",
+    [
+        ("stop", [True, True]),
+        ("abort", [True, True]),
+        ("halt", [True, False]),
+    ],
+)
+def test_stop_success_reflects_exit_status_after_pause(RE, hw, end_run, expected):
+    calls = []
+
+    def stop(self, *, success=True):
+        calls.append(success)
+
+    motor = hw.motor1
+    motor.stop = types.MethodType(stop, motor)
+
+    with pytest.raises(RunEngineInterrupted):
+        RE([Msg("set", motor, 1), Msg("pause")])
+    getattr(RE, end_run)()
+    assert calls == expected
+
+
+def test_stop_success_reflects_exit_status(RE, hw):
+    calls = []
+
+    def stop(self, *, success=True):
+        calls.append(success)
+
+    motor = hw.motor1
+    motor.stop = types.MethodType(stop, motor)
+
+    RE([Msg("set", motor, 1)])
+    assert calls == [True]
+
+    def failing_plan():
+        yield Msg("set", motor, 1)
+        raise ValueError("plan failed")
+
+    calls.clear()
+    with pytest.raises(ValueError):
+        RE(failing_plan())
+    assert calls == [False]
+
+    calls.clear()
+    timer = threading.Timer(0.1, RE.halt)
+    timer.start()
+    with pytest.raises(RunEngineInterrupted):
+        RE([Msg("set", motor, 1), Msg("sleep", None, 10)])
+    timer.join()
+    assert calls == [False]
+
+
 @requires_ophyd
 def test_unstage_and_log_errors(RE):
     unstaged = {}

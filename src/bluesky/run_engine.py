@@ -1766,8 +1766,10 @@ class RunEngine:
             # Some done_callbacks may still be alive in other threads.
             # Block them from creating new 'failed status' tasks on the loop.
             self._pardon_failures.set()
-            # call stop() on every movable object we ever set()
-            await self._stop_movable_objects(success=True)
+            # call stop() on every movable object we ever set(); a halt or a
+            # failed plan tells devices that something has gone wrong, while
+            # stop() and abort() are orderly ends that let the plan clean up
+            await self._stop_movable_objects(success=self._exit_status != "fail" and self._state != "halting")
             for current_run in self._run_bundlers.values():
                 # Clear any uncleared monitoring callbacks.
                 current_run.clear_monitors()

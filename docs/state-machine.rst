@@ -176,7 +176,9 @@ end.
 
 In some situations, you may wish to prevent the plan from doing *anything*
 --- you want to halt immediately, skipping cleanup. For this, use
-``RE.halt()``.
+``RE.halt()``. The RunEngine still stops every device the plan moved, but
+calls ``stop(success=False)`` so that each device can take defensive action;
+it does the same when a plan fails with an exception.
 
 .. _interactive_pause_summary:
 
